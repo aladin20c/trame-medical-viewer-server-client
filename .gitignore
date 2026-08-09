@@ -1,3 +1,14 @@
-.venv
-build
-install
+# macOS
+.DS_Store
+
+# VSCode
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# React client
+react-client/node_modules/
+react-client/dist/
