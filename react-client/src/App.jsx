@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import VtkRemoteView from './VtkRemoteView.jsx';
+import Sidebar from './Sidebar.jsx';
 
 function App({ wsClient, viewId }) {
   const [resolution, setResolution] = useState(6);
@@ -9,46 +10,43 @@ function App({ wsClient, viewId }) {
       setResolution(newState.resolution);
     }
   });
+
   wsClient.getRemote().Trame.subscribeToActions(([actions]) => {
     for (let i = 0; i < actions.length; i++) {
       const { ref, method, args } = actions[i];
       console.log(`Call method "${method}" on ref="${ref}" with args=[${args}]`);
     }
   });
-  
 
-  function updateResolution(event) {
-    const value = Number(event.target.value);
+  function handleResolutionChange(value) {
     setResolution(value);
     wsClient.getRemote().Trame.updateState([
-        { key: "resolution", value }
+      { key: "resolution", value }
     ]);
   }
 
-  function trigger(name, args=[], kwargs={}) {
+  function trigger(name, args = [], kwargs = {}) {
     return wsClient.getRemote().Trame.trigger(name, args, kwargs);
   }
 
   return (
-    <>
-        <div style={{ position: 'absolute', top: '20px', 'right': '20px', zIndex: 1 }}>
-          <input 
-            type="range"
-            min="3" 
-            max="60" 
-            value={resolution} 
-            onChange={updateResolution} 
-          />
-          <button onClick={() => trigger("reset_camera")}>Reset Camera</button>
-          <button onClick={() => trigger("start_animation")}>Start animation</button>
-        </div>
-
-        <VtkRemoteView 
-          wsClient={wsClient}
-          viewId={viewId}
-        />
-    </>
-  )
+    <div style={{ 
+      position: 'relative', 
+      width: '100vw', 
+      height: '100vh', 
+      overflow: 'hidden',
+      margin: 0,
+      padding: 0,
+    }}>
+      <VtkRemoteView wsClient={wsClient} viewId={viewId} />
+      
+      <Sidebar 
+        resolution={resolution}
+        onResolutionChange={handleResolutionChange}
+        onTrigger={trigger}
+      />
+    </div>
+  );
 }
 
-export default App
+export default App;

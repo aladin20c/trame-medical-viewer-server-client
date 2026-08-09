@@ -12,3 +12,6 @@ __pycache__/
 # React client
 react-client/node_modules/
 react-client/dist/
+
+# CT Scans
+data/
