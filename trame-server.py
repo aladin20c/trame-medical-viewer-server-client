@@ -17,20 +17,29 @@ from trame.app import get_server
 from trame.widgets import vtk
 from trame.decorators import TrameApp, change, trigger
 
+##################################################################################
+import os
+import re
+from pathlib import Path
+import itk
+from vtkmodules.util.numpy_support import numpy_to_vtk
+from vtkmodules.vtkCommonDataModel import vtkImageData
+from vtkmodules.vtkCommonDataModel import vtkPiecewiseFunction
+from vtkmodules.vtkRenderingVolumeOpenGL2 import vtkSmartVolumeMapper
+from vtkmodules.vtkRenderingCore import (
+    vtkColorTransferFunction,
+    vtkVolume,
+    vtkVolumeProperty,
+)
 
-def threaded_execution(thread_safe_update_resolution):
-    LOOP_SIZE = 50
-    BASE_RESOLUTION = 6
-    for i in range(LOOP_SIZE):
-        time.sleep(0.1)
-        thread_safe_update_resolution(BASE_RESOLUTION + i)
-    for i in range(LOOP_SIZE):
-        time.sleep(0.1)
-        thread_safe_update_resolution(BASE_RESOLUTION + LOOP_SIZE - i)
+from read_dicom import read_dicom_study
+##################################################################################
 
+DICOM_DIR = str(Path('./data/ct1'))
 
 @TrameApp()
 class WebApp:
+
     def __init__(self):
         # client type does not matter since we are just using the server
         self.server = get_server()
@@ -50,51 +59,127 @@ class WebApp:
             self.render_window, trame_server=self.server, ref="view"
         )
 
+    def create_vtk_volume_from_dicom(self, image, volume_array, study_info):
+        """
+        Create VTK volume from DICOM data.
+        
+        Args:
+            image: ITK image object
+            volume_array: numpy array of the volume
+            study_info: dictionary with study metadata
+            
+        Returns:
+            vtkVolume: ready to be added to a renderer
+        """
+        cols, rows, num_slices = study_info['dimensions']
+        spacing = study_info['spacing']
+        lo, hi = study_info['range']
+        
+        # Convert to VTK format
+        vtk_data = numpy_to_vtk(volume_array.ravel(), deep=True)
+        image_data = vtkImageData()
+        image_data.SetDimensions(cols, rows, num_slices)
+        image_data.SetSpacing(spacing[0], spacing[1], spacing[2])
+        image_data.GetPointData().SetScalars(vtk_data)
+        
+        # Basic transfer functions
+        color_tf = vtkColorTransferFunction()
+        color_tf.AddRGBPoint(lo, 0.0, 0.0, 0.0)      # Black for low
+        color_tf.AddRGBPoint(hi, 1.0, 1.0, 1.0)      # White for high
+        
+        opacity_tf = vtkPiecewiseFunction()
+        opacity_tf.AddPoint(lo, 0.0)                 # Transparent at low
+        opacity_tf.AddPoint(hi, 1.0)                 # Opaque at high
+        
+        # Volume property
+        volume_prop = vtkVolumeProperty()
+        volume_prop.SetColor(color_tf)
+        volume_prop.SetScalarOpacity(opacity_tf)
+        volume_prop.SetInterpolationTypeToLinear()
+        
+        # Mapper
+        mapper = vtkSmartVolumeMapper()
+        mapper.SetInputData(image_data)
+        mapper.SetBlendModeToComposite()
+        
+        # Volume
+        volume = vtkVolume()
+        volume.SetMapper(mapper)
+        volume.SetProperty(volume_prop)
+        
+        return volume, image_data, mapper, volume_prop
+
+
+    # Example usage in your setup_vtk:
     def setup_vtk(self):
-        renderer = vtkRenderer()
-        render_window = vtkRenderWindow()
-        render_window.AddRenderer(renderer)
-        render_window.OffScreenRenderingOn()
+        print("[Trame] setup_vtk()")
+        
+        try:
+            # Setup renderer
+            renderer = vtkRenderer()
+            render_window = vtkRenderWindow()
+            render_window.AddRenderer(renderer)
+            render_window.OffScreenRenderingOn()
+            
+            # Read DICOM using the specialized function
+            image, volume_array, study_info = read_dicom_study(DICOM_DIR)
+            
+            # Create VTK volume
+            volume, image_data, mapper, volume_prop = self.create_vtk_volume_from_dicom(
+                image, volume_array, study_info
+            )
+            
+            # Add to renderer
+            renderer.AddVolume(volume)
+            renderer.SetBackground(0.1, 0.1, 0.1)
+            renderer.ResetCamera()
+            render_window.Render()
+            
+            # Store references
+            self.image_data = image_data
+            self.volume = volume
+            self.mapper = mapper
+            self.volume_prop = volume_prop
+            self.renderer = renderer
+            self.render_window = render_window
+            self.study_info = study_info
+            
+            # Create interactor
+            self.render_window_interactor = vtkRenderWindowInteractor()
+            self.render_window_interactor.SetRenderWindow(render_window)
+            self.render_window_interactor.GetInteractorStyle().SetCurrentStyleToTrackballCamera()
+            
+            print("[Trame] Setup complete!")
+            
+        except Exception as e:
+            print(f"\n[Trame] ERROR in setup_vtk: {e}")
+            import traceback
+            traceback.print_exc()
+            raise
 
-        render_window_interactor = vtkRenderWindowInteractor()
-        render_window_interactor.SetRenderWindow(render_window)
-        render_window_interactor.GetInteractorStyle().SetCurrentStyleToTrackballCamera()
 
-        cone_source = vtkConeSource()
-        mapper = vtkPolyDataMapper()
-        actor = vtkActor()
-        mapper.SetInputConnection(cone_source.GetOutputPort())
-        actor.SetMapper(mapper)
-        renderer.AddActor(actor)
-        renderer.ResetCamera()
-        render_window.Render()
 
-        self.cone_source = cone_source
-        self.renderer = renderer
-        self.render_window = render_window
+    ###############################################################################
+    #################################OTHER#########################################
+    ###############################################################################
 
-    @change("resolution")
-    def on_resolution_change(self, resolution, **kwargs):
-        self.cone_source.SetResolution(resolution)
+    @trigger("set_background_color")
+    def set_background_color(self, color="#1a1a1a"):
+        """Set renderer background color from hex value"""
+        # Convert hex to RGB (0-1 range)
+        hex_color = color.lstrip('#')
+        r = int(hex_color[0:2], 16) / 255.0
+        g = int(hex_color[2:4], 16) / 255.0
+        b = int(hex_color[4:6], 16) / 255.0
+        
+        self.renderer.SetBackground(r, g, b)
+        self.render_window.Render()
         self.client_view.update()
 
     @trigger("reset_camera")
     def reset_camera(self):
         self.renderer.ResetCamera()
         self.client_view.update()
-
-    def _set_resolution(self, value):
-        state = self.server.state
-        with state:
-            state.resolution = value
-
-    def _set_resolution_thread_safe(self, value):
-        self.current_event_loop.call_soon_threadsafe(self._set_resolution, value)
-        self.current_event_loop.call_soon_threadsafe(self.exec_js, "a", value, "c")
-
-    @trigger("start_animation")
-    def start_animation(self):
-        self.pool.submit(threaded_execution, self._set_resolution_thread_safe)
 
     def exec_js(self, *args):
         self.server.js_call("ref:hello", "method:world", *args)

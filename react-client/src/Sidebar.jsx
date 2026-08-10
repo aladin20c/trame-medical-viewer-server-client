@@ -1,6 +1,126 @@
 import { useState } from 'react';
+import RenderTab from './tabs/RenderTab';
+import ViewTab from './tabs/ViewTab';
+import AdjustTab from './tabs/AdjustTab';
+import ToolsTab from './tabs/ToolsTab';
 
-const styles = {
+// ---------- Common UI Styles ----------
+const uiStyles = {
+  section: {
+    marginBottom: '16px',
+  },
+  sectionTitle: {
+    fontSize: '10px',
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+    color: 'rgba(255, 255, 255, 0.35)',
+    marginBottom: '10px',
+  },
+  sliderGroup: {
+    marginBottom: '10px',
+  },
+  label: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    fontSize: '11px',
+    marginBottom: '4px',
+    color: 'rgba(255, 255, 255, 0.65)',
+  },
+  value: {
+    fontSize: '10px',
+    color: 'rgba(255, 255, 255, 0.4)',
+    fontVariantNumeric: 'tabular-nums',
+  },
+  slider: {
+    width: '100%',
+    height: '2px',
+    appearance: 'none',
+    background: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: '1px',
+    outline: 'none',
+    cursor: 'pointer',
+  },
+  select: {
+    width: '100%',
+    padding: '6px 10px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    borderRadius: '6px',
+    color: 'rgba(255, 255, 255, 0.75)',
+    fontSize: '11px',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    outline: 'none',
+    marginBottom: '6px',
+  },
+  button: {
+    width: '100%',
+    padding: '6px 10px',
+    marginBottom: '6px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    borderRadius: '6px',
+    color: 'rgba(255, 255, 255, 0.75)',
+    fontSize: '11px',
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+    fontFamily: 'inherit',
+  },
+  buttonGroup: {
+    display: 'flex',
+    gap: '4px',
+    marginBottom: '6px',
+  },
+  smallButton: {
+    flex: 1,
+    padding: '5px 8px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    borderRadius: '6px',
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: '10px',
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+    fontFamily: 'inherit',
+    textAlign: 'center',
+  },
+  toggleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '8px',
+  },
+  toggleLabel: {
+    fontSize: '11px',
+    color: 'rgba(255, 255, 255, 0.65)',
+  },
+  toggleButton: (active) => ({
+    width: '32px',
+    height: '18px',
+    borderRadius: '9px',
+    background: active ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+    border: 'none',
+    cursor: 'pointer',
+    position: 'relative',
+    transition: 'background 0.2s',
+    padding: 0,
+  }),
+  toggleKnob: (active) => ({
+    position: 'absolute',
+    top: '2px',
+    left: active ? '16px' : '2px',
+    width: '14px',
+    height: '14px',
+    borderRadius: '50%',
+    background: '#fff',
+    transition: 'left 0.2s',
+  }),
+};
+
+// ---------- Sidebar Layout Styles ----------
+const sidebarStyles = {
   sidebar: (isHovered) => ({
     position: 'absolute',
     right: '24px',
@@ -57,106 +177,7 @@ const styles = {
     scrollbarWidth: 'thin',
     scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent',
   },
-  section: {
-    marginBottom: '16px',
-  },
-  sectionTitle: {
-    fontSize: '10px',
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    letterSpacing: '0.06em',
-    color: 'rgba(255, 255, 255, 0.35)',
-    marginBottom: '10px',
-  },
-  sliderGroup: {
-    marginBottom: '10px',
-  },
-  label: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    fontSize: '11px',
-    marginBottom: '4px',
-    color: 'rgba(255, 255, 255, 0.65)',
-  },
-  value: {
-    fontSize: '10px',
-    color: 'rgba(255, 255, 255, 0.4)',
-    fontVariantNumeric: 'tabular-nums',
-  },
-  slider: {
-    width: '100%',
-    height: '2px',
-    appearance: 'none',
-    background: 'rgba(255, 255, 255, 0.12)',
-    borderRadius: '1px',
-    outline: 'none',
-    cursor: 'pointer',
-  },
-  button: {
-    width: '100%',
-    padding: '6px 10px',
-    marginBottom: '6px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '6px',
-    color: 'rgba(255, 255, 255, 0.75)',
-    fontSize: '11px',
-    cursor: 'pointer',
-    transition: 'all 0.15s',
-    fontFamily: 'inherit',
-  },
-  select: {
-    width: '100%',
-    padding: '6px 10px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '6px',
-    color: 'rgba(255, 255, 255, 0.75)',
-    fontSize: '11px',
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-    outline: 'none',
-    marginBottom: '6px',
-  },
-  buttonGroup: {
-    display: 'flex',
-    gap: '4px',
-    marginBottom: '6px',
-  },
-  smallButton: {
-    flex: 1,
-    padding: '5px 8px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '6px',
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: '10px',
-    cursor: 'pointer',
-    transition: 'all 0.15s',
-    fontFamily: 'inherit',
-    textAlign: 'center',
-  },
 };
-
-function SliderControl({ label, value, min = 0, max = 100, unit = '', onChange }) {
-  return (
-    <div style={styles.sliderGroup}>
-      <div style={styles.label}>
-        <span>{label}</span>
-        <span style={styles.value}>{value}{unit}</span>
-      </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        style={styles.slider}
-      />
-    </div>
-  );
-}
 
 const TABS = {
   RENDER: 'Render',
@@ -169,142 +190,17 @@ function Sidebar({ resolution, onResolutionChange, onTrigger }) {
   const [isHovered, setIsHovered] = useState(false);
   const [activeTab, setActiveTab] = useState(TABS.RENDER);
 
-  const renderTab = (
-    <>
-      <SliderControl
-        label="Resolution"
-        value={resolution}
-        min={3}
-        max={60}
-        onChange={onResolutionChange}
-      />
-      <SliderControl label="Opacity" value={70} unit="%" />
-      <SliderControl label="Threshold" value={50} />
-      <SliderControl label="Sample Distance" value={0.5} min={0.1} max={2} />
-      
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Quality</div>
-        <select style={styles.select}>
-          <option>Low</option>
-          <option>Medium</option>
-          <option>High</option>
-        </select>
-        <select style={styles.select}>
-          <option>CPU Rendering</option>
-          <option>GPU Rendering</option>
-        </select>
-      </div>
-    </>
-  );
-
-  const viewTab = (
-    <>
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Orientation</div>
-        <div style={styles.buttonGroup}>
-          <button style={styles.smallButton}>Axial</button>
-          <button style={styles.smallButton}>Coronal</button>
-          <button style={styles.smallButton}>Sagittal</button>
-        </div>
-        <select style={styles.select}>
-          <option>3D Perspective</option>
-          <option>3D Orthographic</option>
-          <option>2D Slice</option>
-        </select>
-      </div>
-
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Display</div>
-        <div style={styles.buttonGroup}>
-          <button style={styles.smallButton}>Volume</button>
-          <button style={styles.smallButton}>Wireframe</button>
-        </div>
-        <div style={styles.buttonGroup}>
-          <button style={styles.smallButton}>Points</button>
-          <button style={styles.smallButton}>Surface</button>
-        </div>
-      </div>
-
-      <SliderControl label="Slice Position" value={128} min={0} max={256} />
-      <SliderControl label="Zoom" value={1} min={0.5} max={3} />
-    </>
-  );
-
-  const adjustTab = (
-    <>
-      <SliderControl label="Brightness" value={65} />
-      <SliderControl label="Contrast" value={80} />
-      <SliderControl label="Window Width" value={400} min={1} max={4000} />
-      <SliderControl label="Window Level" value={40} min={-1000} max={3000} />
-      
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Color Map</div>
-        <select style={styles.select}>
-          <option>Grayscale</option>
-          <option>Hot Metal</option>
-          <option>Cool</option>
-          <option>Bone</option>
-          <option>PET Heat</option>
-        </select>
-      </div>
-
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Lighting</div>
-        <SliderControl label="Ambient" value={0.3} min={0} max={1} />
-        <SliderControl label="Diffuse" value={0.8} min={0} max={1} />
-        <SliderControl label="Specular" value={0.5} min={0} max={1} />
-      </div>
-    </>
-  );
-
-  const toolsTab = (
-    <>
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Camera</div>
-        <button 
-          style={styles.button}
-          onClick={() => onTrigger("reset_camera")}
-        >
-          Reset Camera
-        </button>
-        <button 
-          style={styles.button}
-          onClick={() => onTrigger("start_animation")}
-        >
-          Start Animation
-        </button>
-        <button style={styles.button}>
-          Screenshot
-        </button>
-      </div>
-
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Measurements</div>
-        <button style={styles.button}>Distance</button>
-        <button style={styles.button}>Angle</button>
-        <button style={styles.button}>ROI Analysis</button>
-      </div>
-
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Export</div>
-        <button style={styles.button}>DICOM</button>
-        <button style={styles.button}>NIfTI</button>
-        <button style={styles.button}>OBJ/STL</button>
-      </div>
-    </>
-  );
-
   return (
     <div
-      style={styles.sidebar(isHovered)}
+      style={sidebarStyles.sidebar(isHovered)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div style={styles.tabs}>
+      <div style={sidebarStyles.tabs}>
         {Object.values(TABS).map(tab => (
           <button
             key={tab}
-            style={styles.tab(activeTab === tab)}
+            style={sidebarStyles.tab(activeTab === tab)}
             onClick={() => setActiveTab(tab)}
           >
             {tab}
@@ -312,11 +208,24 @@ function Sidebar({ resolution, onResolutionChange, onTrigger }) {
         ))}
       </div>
 
-      <div style={styles.scrollArea}>
-        {activeTab === TABS.RENDER && renderTab}
-        {activeTab === TABS.VIEW && viewTab}
-        {activeTab === TABS.ADJUST && adjustTab}
-        {activeTab === TABS.TOOLS && toolsTab}
+      <div style={sidebarStyles.scrollArea}>
+        {activeTab === TABS.RENDER && (
+          <RenderTab
+            resolution={resolution}
+            onResolutionChange={onResolutionChange}
+            onTrigger={onTrigger}
+            styles={uiStyles}
+          />
+        )}
+        {activeTab === TABS.VIEW && (
+          <ViewTab onTrigger={onTrigger} styles={uiStyles} />
+        )}
+        {activeTab === TABS.ADJUST && (
+          <AdjustTab onTrigger={onTrigger} styles={uiStyles} />
+        )}
+        {activeTab === TABS.TOOLS && (
+          <ToolsTab onTrigger={onTrigger} styles={uiStyles} />
+        )}
       </div>
     </div>
   );
