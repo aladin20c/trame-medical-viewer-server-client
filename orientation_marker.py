@@ -101,7 +101,7 @@ class OrientationMarker:
         output = reader.GetOutput()
 
         if output is None or output.GetNumberOfPoints() == 0:
-            logger.warning("Orientation marker model contains no geometry: %s"model_path)
+            logger.warning("Orientation marker model contains no geometry: %s",model_path)
             return None
 
         mapper = vtkPolyDataMapper()
@@ -159,10 +159,7 @@ class OrientationMarker:
     def set_marker(self, marker_type):
         self.destroy()
 
-        marker_type = int(marker_type)
-
-        if marker_type == 0:
-            return
+        marker_type = marker_type
 
         marker = self._create_marker(marker_type)
 

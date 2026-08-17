@@ -6,8 +6,8 @@ from trame.decorators import trigger
 class OrientationMarkerTriggersMixin:
 
     @trigger("set_orientation_marker")
-    def set_orientation_marker(self, marker_type=0):
-        marker_type = int(marker_type)
+    def set_orientation_marker(self, marker_type):
+        marker_type = marker_type
 
         self.server.state.orientation_marker_type = marker_type
 
