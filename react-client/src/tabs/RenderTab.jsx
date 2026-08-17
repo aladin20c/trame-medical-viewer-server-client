@@ -177,7 +177,7 @@ function RenderTab({
           disabled={!orientationVisible}
         />
       </div>
-
+      {/*
       <div style={styles.section}>
         <div style={styles.sectionTitle}>
           Anatomical Labels
@@ -201,6 +201,7 @@ function RenderTab({
           disabled={!labelsVisible}
         />
       </div>
+      */}
     </>
   );
 }
