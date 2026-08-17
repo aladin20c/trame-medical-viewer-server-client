@@ -33,6 +33,7 @@ from vtkmodules.vtkRenderingCore import (
 from read_dicom import read_dicom_study
 from orientation_marker import OrientationMarker
 from orientation_marker_triggers import OrientationMarkerTriggersMixin
+from utils import hex_to_rgb
 ##################################################################################
 
 DICOM_DIR = str(Path('./data/ct1'))
@@ -47,9 +48,10 @@ class WebApp(OrientationMarkerTriggersMixin):
 
         # Thread pool
         self.pool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-    
-        # State variables for Orientation marker
-        self.server.state.orientation_marker_type = 11
+
+        # State variables
+        self.server.state.background_color = [0.1,0.1,0.1]
+        self.server.state.orientation_marker_type = "cube"
         self.server.state.orientation_marker_visible = True
         self.server.state.orientation_marker_size = 20
 
@@ -69,19 +71,17 @@ class WebApp(OrientationMarkerTriggersMixin):
             self.render_window, trame_server=self.server, ref="view"
         )
 
-
     def create_vtk_volume_from_dicom(self, image, volume_array, study_info):
         """
         Create VTK volume from DICOM data.
-        
         Args:
             image: ITK image object
             volume_array: numpy array of the volume
             study_info: dictionary with study metadata
-            
         Returns:
             vtkVolume: ready to be added to a renderer
         """
+        print("[Trame] create_vtk_volume_from_dicom")
         cols, rows, num_slices = study_info['dimensions']
         spacing = study_info['spacing']
         lo, hi = study_info['range']
@@ -95,12 +95,12 @@ class WebApp(OrientationMarkerTriggersMixin):
         
         # Basic transfer functions
         color_tf = vtkColorTransferFunction()
-        color_tf.AddRGBPoint(lo, 0.0, 0.0, 0.0)      # Black for low
-        color_tf.AddRGBPoint(hi, 1.0, 1.0, 1.0)      # White for high
+        color_tf.AddRGBPoint(lo, 0.0, 0.0, 0.0)
+        color_tf.AddRGBPoint(hi, 1.0, 1.0, 1.0)
         
         opacity_tf = vtkPiecewiseFunction()
-        opacity_tf.AddPoint(lo, 0.0)                 # Transparent at low
-        opacity_tf.AddPoint(hi, 1.0)                 # Opaque at high
+        opacity_tf.AddPoint(lo, 0.0)
+        opacity_tf.AddPoint(hi, 1.0)
         
         # Volume property
         volume_prop = vtkVolumeProperty()
@@ -120,8 +120,7 @@ class WebApp(OrientationMarkerTriggersMixin):
         
         return volume, image_data, mapper, volume_prop
 
-
-    # Example usage in your setup_vtk:
+    # setup_vtk:
     def setup_vtk(self):
         print("[Trame] setup_vtk()")
         
@@ -142,7 +141,7 @@ class WebApp(OrientationMarkerTriggersMixin):
             
             # Add to renderer
             renderer.AddVolume(volume)
-            renderer.SetBackground(0.1, 0.1, 0.1)
+            renderer.SetBackground(self.server.state.background_color)
             renderer.ResetCamera()
             render_window.Render()
             
@@ -172,28 +171,23 @@ class WebApp(OrientationMarkerTriggersMixin):
     #################################OTHER#########################################
     ###############################################################################
 
-
     @trigger("set_background_color")
     def set_background_color(self, color="#1a1a1a"):
         """Set renderer background color from hex value"""
-        # Convert hex to RGB (0-1 range)
-        hex_color = color.lstrip('#')
-        r = int(hex_color[0:2], 16) / 255.0
-        g = int(hex_color[2:4], 16) / 255.0
-        b = int(hex_color[4:6], 16) / 255.0
-        
-        self.renderer.SetBackground(r, g, b)
+        print("[Trame] set_background_color()")
+        self.server.state.background_color = hex_to_rgb(color)
+        self.renderer.SetBackground(self.server.state.background_color)
         self.render_window.Render()
         self.client_view.update()
 
     @trigger("reset_camera")
     def reset_camera(self):
+        print("[Trame] reset_camera()")
         self.renderer.ResetCamera()
         self.client_view.update()
 
     def exec_js(self, *args):
         self.server.js_call("ref:hello", "method:world", *args)
-
 
 if __name__ == "__main__":
     web_app = WebApp()

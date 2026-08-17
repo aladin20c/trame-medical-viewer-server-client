@@ -1,4 +1,4 @@
-function ToolsTab({ onTrigger, styles }) {
+function ToolsTab({ onTrigger,onGetState, styles }) {
   return (
     <>
       <div style={styles.section}>

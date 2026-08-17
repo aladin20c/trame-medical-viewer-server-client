@@ -1,6 +1,6 @@
 import { SliderControl } from './CommonControls';
 
-function AdjustTab({ onTrigger, styles }) {
+function AdjustTab({ onTrigger,onGetState, styles }) {
   return (
     <>
       <SliderControl label="Brightness" value={65} styles={styles} />

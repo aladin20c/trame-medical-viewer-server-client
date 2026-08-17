@@ -3,30 +3,31 @@ import VtkRemoteView from './VtkRemoteView.jsx';
 import Sidebar from './Sidebar.jsx';
 
 function App({ wsClient, viewId }) {
-  const [resolution, setResolution] = useState(6);
+  // wsClient.getRemote().Trame.subscribeToStateUpdate(([newState]) => {
+  //   if ("resolution" in newState) {
+  //     setResolution(newState.resolution);
+  //   }
+  // });
 
-  wsClient.getRemote().Trame.subscribeToStateUpdate(([newState]) => {
-    if ("resolution" in newState) {
-      setResolution(newState.resolution);
-    }
-  });
+  // wsClient.getRemote().Trame.subscribeToActions(([actions]) => {
+  //   for (let i = 0; i < actions.length; i++) {
+  //     const { ref, method, args } = actions[i];
+  //     console.log(`Call method "${method}" on ref="${ref}" with args=[${args}]`);
+  //   }
+  // });
 
-  wsClient.getRemote().Trame.subscribeToActions(([actions]) => {
-    for (let i = 0; i < actions.length; i++) {
-      const { ref, method, args } = actions[i];
-      console.log(`Call method "${method}" on ref="${ref}" with args=[${args}]`);
-    }
-  });
-
-  function handleResolutionChange(value) {
-    setResolution(value);
-    wsClient.getRemote().Trame.updateState([
-      { key: "resolution", value }
-    ]);
-  }
+  // function handleResolutionChange(value) {
+  //   setResolution(value);
+  //   wsClient.getRemote().Trame.updateState([
+  //     { key: "resolution", value }
+  //   ]);
+  // }
 
   function trigger(name, args = [], kwargs = {}) {
     return wsClient.getRemote().Trame.trigger(name, args, kwargs);
+  }
+  function getState(...names) {
+    return wsClient.getRemote().Trame.getState(...names);
   }
 
   return (
@@ -41,9 +42,8 @@ function App({ wsClient, viewId }) {
       <VtkRemoteView wsClient={wsClient} viewId={viewId} />
       
       <Sidebar 
-        resolution={resolution}
-        onResolutionChange={handleResolutionChange}
         onTrigger={trigger}
+        onGetState={getState}
       />
     </div>
   );

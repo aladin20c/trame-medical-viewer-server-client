@@ -1,6 +1,6 @@
 import { SliderControl } from './CommonControls';
 
-function ViewTab({ onTrigger, styles }) {
+function ViewTab({ onTrigger,onGetState, styles }) {
   return (
     <>
       <div style={styles.section}>

@@ -4,7 +4,6 @@ import ViewTab from './tabs/ViewTab';
 import AdjustTab from './tabs/AdjustTab';
 import ToolsTab from './tabs/ToolsTab';
 
-// ---------- Common UI Styles ----------
 const uiStyles = {
   section: {
     marginBottom: '16px',
@@ -119,7 +118,6 @@ const uiStyles = {
   }),
 };
 
-// ---------- Sidebar Layout Styles ----------
 const sidebarStyles = {
   sidebar: (isHovered) => ({
     position: 'absolute',
@@ -186,7 +184,7 @@ const TABS = {
   TOOLS: 'Tools',
 };
 
-function Sidebar({ resolution, onResolutionChange, onTrigger }) {
+function Sidebar({ onTrigger,onGetState }) {
   const [isHovered, setIsHovered] = useState(false);
   const [activeTab, setActiveTab] = useState(TABS.RENDER);
 
@@ -211,20 +209,19 @@ function Sidebar({ resolution, onResolutionChange, onTrigger }) {
       <div style={sidebarStyles.scrollArea}>
         {activeTab === TABS.RENDER && (
           <RenderTab
-            resolution={resolution}
-            onResolutionChange={onResolutionChange}
             onTrigger={onTrigger}
+            onGetState={onGetState}
             styles={uiStyles}
           />
         )}
         {activeTab === TABS.VIEW && (
-          <ViewTab onTrigger={onTrigger} styles={uiStyles} />
+          <ViewTab onTrigger={onTrigger} onGetState={onGetState} styles={uiStyles} />
         )}
         {activeTab === TABS.ADJUST && (
-          <AdjustTab onTrigger={onTrigger} styles={uiStyles} />
+          <AdjustTab onTrigger={onTrigger} onGetState={onGetState} styles={uiStyles} />
         )}
         {activeTab === TABS.TOOLS && (
-          <ToolsTab onTrigger={onTrigger} styles={uiStyles} />
+          <ToolsTab onTrigger={onTrigger} onGetState={onGetState} styles={uiStyles} />
         )}
       </div>
     </div>
