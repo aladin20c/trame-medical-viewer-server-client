@@ -15,6 +15,31 @@ function RenderTab({ resolution, onResolutionChange, onTrigger, styles }) {
     onTrigger("set_background_color", [color]);
   };
 
+  const handleOrientationTypeChange = (type) => {
+    setOrientationType(type);
+    onTrigger("set_orientation_marker", [type, orientationSize]);
+  };
+
+  const handleOrientationSizeChange = (size) => {
+    setOrientationSize(size);
+    onTrigger("set_orientation_marker", [orientationType, size]);
+  };
+
+  const handleOrientationVisibilityChange = (visible) => {
+    setOrientationVisible(visible);
+    onTrigger("toggle_orientation_marker", [visible]);
+  };
+
+  const handleLabelsVisibilityChange = (visible) => {
+    setLabelsVisible(visible);
+    onTrigger("toggle_anatomical_labels", [visible]);
+  };
+
+  const handleLabelsSizeChange = (size) => {
+    setLabelsSize(size);
+    onTrigger("set_labels", [size]);
+  };
+
 
   return (
     <>
@@ -42,24 +67,27 @@ function RenderTab({ resolution, onResolutionChange, onTrigger, styles }) {
 
       <div style={styles.section}>
         <div style={styles.sectionTitle}>Orientation Marker</div>
-        <ToggleControl label="Show" checked={orientationVisible} onChange={setOrientationVisible} styles={styles} />
+        <ToggleControl label="Show" checked={orientationVisible} onChange={handleOrientationVisibilityChange} styles={styles} />
         <select
           style={styles.select}
           value={orientationType}
-          onChange={(e) => setOrientationType(e.target.value)}
+          onChange={(e) => handleOrientationTypeChange(e.target.value)}
           disabled={!orientationVisible}
         >
           <option value="cube">Cube</option>
           <option value="axes">Axes</option>
           <option value="human">Human Figure</option>
+          <option value="brain">Brain</option>
+          <option value="heart">Heart</option>
+          <option value="skull">Skull</option>
         </select>
-        <SliderControl label="Size" value={orientationSize} min={10} max={100} unit="px" onChange={setOrientationSize} styles={styles} />
+        <SliderControl label="Size" value={orientationSize} min={10} max={100} unit="px" onChange={handleOrientationSizeChange} styles={styles} disabled={!orientationVisible}/>
       </div>
 
       <div style={styles.section}>
         <div style={styles.sectionTitle}>Anatomical Labels</div>
-        <ToggleControl label="Show" checked={labelsVisible} onChange={setLabelsVisible} styles={styles} />
-        <SliderControl label="Size" value={labelsSize} min={8} max={32} unit="px" onChange={setLabelsSize} styles={styles} />
+        <ToggleControl label="Show" checked={labelsVisible} onChange={handleLabelsVisibilityChange} styles={styles} />
+        <SliderControl label="Size" value={labelsSize} min={8} max={32} unit="px" onChange={handleLabelsSizeChange} styles={styles} disabled={!labelsVisible}/>
       </div>
     </>
   );
