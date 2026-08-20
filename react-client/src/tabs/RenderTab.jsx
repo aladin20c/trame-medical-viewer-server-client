@@ -14,16 +14,13 @@ const [orientationVisible, setOrientationVisible] = useState(true);
   const orientationTypes = [
     "cube",
     "axes",
-    "cat",
     "human",
     "brain",
     "heart",
     "skull",
-    "spine",
     "lungs",
     "liver",
-    "kidney",
-    "stomach",
+    "kidneys",
   ];
 
 

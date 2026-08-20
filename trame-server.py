@@ -33,13 +33,15 @@ from vtkmodules.vtkRenderingCore import (
 from read_dicom import read_dicom_study
 from orientation_marker import OrientationMarker
 from orientation_marker_triggers import OrientationMarkerTriggersMixin
+from cinematic_rendering import CinematicRendering
+from cinematic_rendering_triggers import CinematicRenderingTriggersMixin
 from utils import hex_to_rgb
 ##################################################################################
 
 DICOM_DIR = str(Path('./data/ct1'))
 
 @TrameApp()
-class WebApp(OrientationMarkerTriggersMixin):
+class WebApp(OrientationMarkerTriggersMixin,CinematicRenderingTriggersMixin):
 
     def __init__(self):
         # client type does not matter since we are just using the server
@@ -51,7 +53,7 @@ class WebApp(OrientationMarkerTriggersMixin):
 
         # State variables
         self.server.state.background_color = [0.1,0.1,0.1]
-        self.server.state.orientation_marker_type = "cube"
+        self.server.state.orientation_marker_type = OrientationMarker.TYPE_CUBE
         self.server.state.orientation_marker_visible = True
         self.server.state.orientation_marker_size = 20
 
@@ -60,11 +62,20 @@ class WebApp(OrientationMarkerTriggersMixin):
 
         self.orientation_marker = OrientationMarker(
             render_window_interactor=self.render_window_interactor,
-            marker_models_dir=self.server.state.marker_models_dir,
+            marker_models_dir='./assets',
         )
-        self.orientation_marker.set_marker(
-            OrientationMarker.TYPE_AXES
+        self.orientation_marker.set_marker(self.server.state.orientation_marker_type)
+
+        self.cinematic = CinematicRendering(
+            volume_property=self.volume_prop,
+            renderer=self.renderer,
+            render_window=self.render_window,
+            mapper=self.mapper,
+            image_data=self.image_data,
+            color_transfer_function=self.color_tf,
+            opacity_transfer_function=self.opacity_tf,
         )
+        self.setup_cinematic_rendering_state()
 
         # Create server side for remote view
         self.client_view = vtk.VtkRemoteView(
@@ -94,18 +105,18 @@ class WebApp(OrientationMarkerTriggersMixin):
         image_data.GetPointData().SetScalars(vtk_data)
         
         # Basic transfer functions
-        color_tf = vtkColorTransferFunction()
-        color_tf.AddRGBPoint(lo, 0.0, 0.0, 0.0)
-        color_tf.AddRGBPoint(hi, 1.0, 1.0, 1.0)
+        self.color_tf = vtkColorTransferFunction()
+        self.color_tf.AddRGBPoint(lo, 0.0, 0.0, 0.0)
+        self.color_tf.AddRGBPoint(hi, 1.0, 1.0, 1.0)
         
-        opacity_tf = vtkPiecewiseFunction()
-        opacity_tf.AddPoint(lo, 0.0)
-        opacity_tf.AddPoint(hi, 1.0)
+        self.opacity_tf = vtkPiecewiseFunction()
+        self.opacity_tf.AddPoint(lo, 0.0)
+        self.opacity_tf.AddPoint(hi, 1.0)
         
         # Volume property
         volume_prop = vtkVolumeProperty()
-        volume_prop.SetColor(color_tf)
-        volume_prop.SetScalarOpacity(opacity_tf)
+        volume_prop.SetColor(self.color_tf)
+        volume_prop.SetScalarOpacity(self.opacity_tf)
         volume_prop.SetInterpolationTypeToLinear()
         
         # Mapper

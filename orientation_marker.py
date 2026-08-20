@@ -22,14 +22,13 @@ class OrientationMarker:
     """
 
     MODEL_FILES = {
+        "human": "human.stl",
         "brain": "brain.stl",
-        "skull": "skull.stl",
-        "spine": "spine.stl",
         "heart": "heart.stl",
+        "skull": "skull.stl",
         "lungs": "lungs.stl",
         "liver": "liver.stl",
-        "kidney": "kidney.stl",
-        "stomach": "stomach.stl",
+        "kidneys": "kidney.stl",
     }
     TYPE_CUBE = "cube"
     TYPE_AXES = "axes"
@@ -53,24 +52,63 @@ class OrientationMarker:
     def _create_axes(self):
         if self.axes is None:
             self.axes = vtkAxesActor()
+            # Geometry
             self.axes.SetShaftTypeToCylinder()
-            self.axes.SetCylinderRadius(0.02)
-            self.axes.SetConeRadius(0.04)
-            self.axes.SetSphereRadius(0.04)
+            self.axes.SetCylinderRadius(0.025)
+            self.axes.SetConeRadius(0.055)
+            self.axes.SetSphereRadius(0.045)
+            red = (1.0, 0.15, 0.15)
+            green = (0.15, 0.85, 0.25)
+            blue = (0.15, 0.40, 1.0)
+            # X axis
+            self.axes.GetXAxisShaftProperty().SetColor(*red)
+            self.axes.GetXAxisTipProperty().SetColor(*red)
+            # Y axis
+            self.axes.GetYAxisShaftProperty().SetColor(*green)
+            self.axes.GetYAxisTipProperty().SetColor(*green)
+            # Z axis
+            self.axes.GetZAxisShaftProperty().SetColor(*blue)
+            self.axes.GetZAxisTipProperty().SetColor(*blue)
+            # labels
+            self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().SetColor(1.0, 1.0, 1.0)
+            self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().SetColor(1.0, 1.0, 1.0 )
+            self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().SetColor(1.0, 1.0, 1.0)
+
         return self.axes
 
     def _create_cube(self):
         if self.cube is None:
             self.cube = vtkAnnotatedCubeActor()
+            # labels
             self.cube.SetXPlusFaceText("L")
             self.cube.SetXMinusFaceText("R")
             self.cube.SetYPlusFaceText("P")
             self.cube.SetYMinusFaceText("A")
             self.cube.SetZPlusFaceText("S")
             self.cube.SetZMinusFaceText("I")
+
+            red = (0.85, 0.12, 0.12)
+            green = (0.12, 0.65, 0.18)
+            blue = (0.12, 0.32, 0.85)
+            # X
+            self.cube.GetXPlusFaceProperty().SetColor(*red)
+            self.cube.GetXMinusFaceProperty().SetColor(*red)
+            # Y
+            self.cube.GetYPlusFaceProperty().SetColor(*green)
+            self.cube.GetYMinusFaceProperty().SetColor(*green)
+            # Z
+            self.cube.GetZPlusFaceProperty().SetColor(*blue)
+            self.cube.GetZMinusFaceProperty().SetColor(*blue)
+            #  letters
+            text_property = self.cube.GetTextEdgesProperty()
+            text_property.SetColor(1.0, 1.0, 1.0)
+            text_property.SetLineWidth(1.0)
             self.cube.SetFaceTextScale(0.65)
-            self.cube.GetTextEdgesProperty().SetLineWidth(2)
+            # dark edges
+            self.cube.GetTextEdgesProperty().SetColor(0.05, 0.05, 0.05)
+            self.cube.GetTextEdgesProperty().SetLineWidth(1.5)
             self.cube.GetCubeProperty().SetOpacity(1.0)
+
         return self.cube
 
     def _load_model(self, model_path):
@@ -146,8 +184,8 @@ class OrientationMarker:
         self.widget = vtkOrientationMarkerWidget()
         self.widget.SetOrientationMarker(marker)
         self.widget.SetInteractor(self.interactor)
-        self.widget.InteractiveOff()
         self._apply_viewport()
+        self.widget.InteractiveOff()
 
     def set_visible(self, visible):
         self.visible = bool(visible)

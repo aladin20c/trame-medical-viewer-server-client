@@ -1,5 +1,7 @@
 ## Environment setup
 
+![viewer interface](./static/screenshot.png)
+
 __Server__
 
 ```
