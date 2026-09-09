@@ -184,53 +184,6 @@ function AdjustTab({ onTrigger, onGetState, styles }) {
         styles={styles}
       />
 
-      {/* Lighting */}
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Lighting</div>
-        <SliderControl
-          label="Ambient"
-          value={ambient}
-          min={0}
-          max={1}
-          step={0.01}
-          onChange={setAmbient}
-          onCommit={handleAmbientChange}
-          styles={styles}
-          disabled={isLoading}
-        />
-        <SliderControl
-          label="Diffuse"
-          value={diffuse}
-          min={0}
-          max={1}
-          step={0.01}
-          onChange={setDiffuse}
-          onCommit={handleDiffuseChange}
-          styles={styles}
-          disabled={isLoading}
-        />
-        <SliderControl
-          label="Specular"
-          value={specular}
-          min={0}
-          max={1}
-          step={0.01}
-          onChange={setSpecular}
-          onCommit={handleSpecularChange}
-          styles={styles}
-          disabled={isLoading}
-        />
-        <SliderControl
-          label="Specular Power"
-          value={specularPower}
-          min={1}
-          max={100}
-          onChange={setSpecularPower}
-          onCommit={handleSpecularPowerChange}
-          styles={styles}
-          disabled={isLoading}
-        />
-      </div>
 
       {/* Cinematic Rendering Toggle */}
       <div style={styles.section}>
@@ -271,6 +224,50 @@ function AdjustTab({ onTrigger, onGetState, styles }) {
               step={0.01}
               onChange={setCinematicScattering}
               onCommit={handleScatteringChange}
+              styles={styles}
+              disabled={isLoading}
+            />
+
+            <SliderControl
+              label="Ambient"
+              value={ambient}
+              min={0}
+              max={1}
+              step={0.01}
+              onChange={setAmbient}
+              onCommit={handleAmbientChange}
+              styles={styles}
+              disabled={isLoading}
+            />
+            <SliderControl
+              label="Diffuse"
+              value={diffuse}
+              min={0}
+              max={1}
+              step={0.01}
+              onChange={setDiffuse}
+              onCommit={handleDiffuseChange}
+              styles={styles}
+              disabled={isLoading}
+            />
+            <SliderControl
+              label="Specular"
+              value={specular}
+              min={0}
+              max={1}
+              step={0.01}
+              onChange={setSpecular}
+              onCommit={handleSpecularChange}
+              styles={styles}
+              disabled={isLoading}
+            />
+            <SliderControl
+              label="Specular Power"
+              value={specularPower}
+              min={1}
+              max={100}
+              onChange={setSpecularPower}
+              onCommit={handleSpecularPowerChange}
               styles={styles}
               disabled={isLoading}
             />

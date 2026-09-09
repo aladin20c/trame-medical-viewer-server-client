@@ -5,8 +5,7 @@ class CinematicRenderingTriggersMixin:
     """
     Trame/React interface for CinematicRendering.
     """
-
-
+    
     def setup_cinematic_rendering_state(self):
         """
         Initialize Trame state.
@@ -30,18 +29,24 @@ class CinematicRenderingTriggersMixin:
         value = float(value)
         self.cinematic.set_brightness(value)
         self.server.state.brightness = value
+        self.render_window.Render()
+        self.client_view.update()
 
     @trigger("set_contrast")
     def set_contrast(self, value):
         value = float(value)
         self.cinematic.set_contrast(value)
         self.server.state.contrast = value
+        self.render_window.Render()
+        self.client_view.update()
 
     @trigger("set_window_width")
     def set_window_width(self, value):
         value = float(value)
         self.cinematic.set_window_width(value)
         self.server.state.window_width = value
+        self.render_window.Render()
+        self.client_view.update()
 
 
     @trigger("set_window_level")
@@ -49,36 +54,48 @@ class CinematicRenderingTriggersMixin:
         value = float(value)
         self.cinematic.set_window_level(value)
         self.server.state.window_level = value
+        self.render_window.Render()
+        self.client_view.update()
 
     @trigger("set_lighting_ambient")
     def set_lighting_ambient(self, value):
         value = float(value)
         self.cinematic.set_ambient(value)
         self.server.state.lighting_ambient = value
+        self.render_window.Render()
+        self.client_view.update()
 
     @trigger("set_lighting_diffuse")
     def set_lighting_diffuse(self, value):
         value = float(value)
         self.cinematic.set_diffuse(value)
         self.server.state.lighting_diffuse = value
+        self.render_window.Render()
+        self.client_view.update()
 
     @trigger("set_lighting_specular")
     def set_lighting_specular(self, value):
         value = float(value)
         self.cinematic.set_specular(value)
         self.server.state.lighting_specular = value
+        self.render_window.Render()
+        self.client_view.update()
 
     @trigger("set_lighting_specular_power")
     def set_lighting_specular_power(self, value):
         value = float(value)
         self.cinematic.set_specular_power(value)
         self.server.state.lighting_specular_power = value
+        self.render_window.Render()
+        self.client_view.update()
 
     @trigger("cinematic_rendering_toggle")
     def cinematic_rendering_toggle(self, enabled):
         enabled = bool(enabled)
         self.cinematic.toggle(enabled)
         self.server.state.cinematic_rendering_enabled = self.cinematic.enabled
+        self.render_window.Render()
+        self.client_view.update()
         
     @trigger("set_cinematic_quality")
     def set_cinematic_quality(self, quality):
@@ -87,12 +104,16 @@ class CinematicRenderingTriggersMixin:
         """
         self.cinematic.set_quality(quality)
         self.server.state.cinematic_quality = quality
+        self.render_window.Render()
+        self.client_view.update()
 
     @trigger("set_cinematic_scattering")
     def set_cinematic_scattering(self, value):
         value = float(value)
         self.cinematic.set_scattering(value)
         self.server.state.cinematic_scattering = value
+        self.render_window.Render()
+        self.client_view.update()
 
 
     @trigger("set_transfer_function")
@@ -116,3 +137,5 @@ class CinematicRenderingTriggersMixin:
 
         self.cinematic.set_transfer_function(intensities=intensities,opacities=opacities,colors=colors,preset=preset)
         self.server.state.transfer_function_preset = preset
+        self.render_window.Render()
+        self.client_view.update()
